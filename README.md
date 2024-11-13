@@ -5,3 +5,7 @@
 python3 ./download_dataset.py
 ```
 
+## Instalar dependencias 
+```bash
+poetry install
+```
