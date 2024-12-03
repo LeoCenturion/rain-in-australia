@@ -3,7 +3,7 @@ import requests
 import zipfile
 
 url_countries = "https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/110m_cultural.zip"
-
+url_locations = "https://simplemaps.com/static/data/world-cities/basic/simplemaps_worldcities_basicv1.77.zip"
 # URL of the dataset
 url_rains = 'https://www.kaggle.com/api/v1/datasets/download/jsphyg/weather-dataset-rattle-package'
 def download_dataset(url, filename):
@@ -42,3 +42,4 @@ def download_dataset(url, filename):
         print(f"Failed to download file. HTTP status code: {response.status_code}")
 download_dataset(url_rains, 'rains')
 download_dataset(url_countries, '110m_cultural')
+download_dataset(url_locations, 'simplemaps_worldcities_basicv1.77.zip')
