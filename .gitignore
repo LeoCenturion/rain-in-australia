@@ -1,1 +1,6 @@
-
+./data/
+./models/cache
+./models/pipeline_cache
+./models/.ipynb_checkpoints/
+./models/__pycache__/
+./idea/
