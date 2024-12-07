@@ -28,6 +28,12 @@ class HierarchicalImputer(BaseEstimator, TransformerMixin):
         else:
             return np.isnan(value)
 
+    def safely_extract_value(self, df, key, column):
+        try:
+            return df[key][column]
+        except KeyError:
+            return np.nan
+
     def impute_row_hierarchicaly(
             self,
             row,
@@ -39,9 +45,11 @@ class HierarchicalImputer(BaseEstimator, TransformerMixin):
             l2_group_key = "Month"
     ):
         for c in features:
-            imputation_value = grouped_2_levels.loc[(row[l1_group_key], row[l2_group_key])][c]
+            imputation_value = self.safely_extract_value(grouped_2_levels, (row[l1_group_key], row[l2_group_key]), c)
+
             if self.is_null(imputation_value):
-                imputation_value = grouped_1_level.loc[row[l1_group_key]][c]
+                imputation_value = self.safely_extract_value(grouped_2_levels, row[l1_group_key], c)
+
             if self.is_null(imputation_value):
                 imputation_value = global_values[c]
             row[c] = imputation_value
@@ -94,7 +102,7 @@ class ExpandDateTransformer(BaseEstimator, TransformerMixin):
         if self.month:
             X['Month'] = X['Date'].dt.month
         if self.week:
-            X['Week'] = X['Week'].dt.day
+            X['Week'] = X['Week'].dt.week
         if self.day:
             X['Day'] = X['Day'].dt.day
         return X

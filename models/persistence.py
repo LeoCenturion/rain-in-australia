@@ -1,4 +1,5 @@
 import joblib
+import os
 
 MODELS_CACHE_DIR='./cache'
 DEFAULT_NAME = ""
@@ -15,11 +16,17 @@ def load(model, name=DEFAULT_NAME):
 
 def save(model, name=DEFAULT_NAME):
     hash_id = hash_model(model)
+    print(f'Saving: {common_name(hash_id, name)}')
     joblib.dump(model, f'{MODELS_CACHE_DIR}/{common_name(hash_id, name)}')
 
-def load_or_fit(model, x, y, name = DEFAULT_NAME):
+def clean(model, name=DEFAULT_NAME):
+    hash_id = hash_model(model)
+    os.remove(f'{MODELS_CACHE_DIR}/{common_name(hash_id, name)}')
+
+def load_or_fit(model, x, y, name = DEFAULT_NAME, force = False):
     fitted = None
     try:
+        if force: clean(model, name)
         fitted = load(model, name)
     except FileNotFoundError:
         fitted = model.fit(x,y)
