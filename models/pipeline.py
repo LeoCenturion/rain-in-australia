@@ -45,6 +45,8 @@ class HierarchicalImputer(BaseEstimator, TransformerMixin):
             l2_group_key = "Month"
     ):
         for c in features:
+            if not self.is_null(row[c]):
+                continue
             imputation_value = self.safely_extract_value(grouped_2_levels, (row[l1_group_key], row[l2_group_key]), c)
 
             if self.is_null(imputation_value):
