@@ -56,6 +56,7 @@ class HierarchicalImputer(BaseEstimator, TransformerMixin):
             if self.is_null(imputation_value):
                 imputation_value = global_values[c]
             row[c] = imputation_value
+
         return row
 
     def fit(self, X, y = None):
@@ -142,6 +143,26 @@ class CoordinateTransformer(BaseEstimator, TransformerMixin):
 
         return merged
 
+class CoordinateTransformer2(BaseEstimator, TransformerMixin):
+    def __init__(self, city_coords):
+        self.city_coords = city_coords
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        # Crear columnas 'Latitude' y 'Longitude' inicializadas a NaN
+        X['Latitude'] = np.nan
+        X['Longitude'] = np.nan
+
+        # Llenar las columnas usando el diccionario city_coords
+        for loc in X['Location']:
+            if loc in self.city_coords:
+                X.loc[X['Location'] == loc, 'Latitude'] = self.city_coords[loc][0]
+                X.loc[X['Location'] == loc, 'Longitude'] = self.city_coords[loc][1]
+
+        return X
+
 # Custom transformer for handling wind directions
 class WindDirectionTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
@@ -159,6 +180,24 @@ class WindDirectionTransformer(BaseEstimator, TransformerMixin):
 
         # Drop original direction columns
         # X.drop(columns=["WindGustDir", "WindDir9am", "WindDir3pm"], inplace=True)
+        return X
+
+# Inherited class that also computes the cosine and sine of wind directions
+class ExtendedWindDirectionTransformer(WindDirectionTransformer):
+    def transform(self, X):
+        # Call the transform method of the base class
+        X = super().transform(X)
+
+        # Calculate the cosine and sine of the angles in radians
+        X["WindGustDirCos"] = np.cos(np.radians(X["WindGustDirDeg"]))
+        X["WindGustDirSin"] = np.sin(np.radians(X["WindGustDirDeg"]))
+
+        X["WindDir9amCos"] = np.cos(np.radians(X["WindDir9amDeg"]))
+        X["WindDir9amSin"] = np.sin(np.radians(X["WindDir9amDeg"]))
+
+        X["WindDir3pmCos"] = np.cos(np.radians(X["WindDir3pmDeg"]))
+        X["WindDir3pmSin"] = np.sin(np.radians(X["WindDir3pmDeg"]))
+
         return X
 
 # Custom transformer for converting RainTomorrow to binary
@@ -180,6 +219,16 @@ class DropColumnsTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         return X.drop(columns=self.columns)
 
+# Custom transformer for counting nulls for instances
+class CountNullsTransformer(BaseEstimator, TransformerMixin):
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        # Count null values per instance
+        X['NullsCount'] = X.isnull().sum(axis=1)
+        return X
+
 class ShapeDebugger(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None):
@@ -197,6 +246,15 @@ class ColumnDebugger(BaseEstimator, TransformerMixin):
     def transform(self, X):
         print(X.columns)
         return X
+
+def sample_array(X, y, sample_frac=0.1):
+    combined_array = np.hstack((X, y))  # Anexar X e y horizontalmente
+
+    np.random.shuffle(combined_array)  # Reordenar al azar
+    sample_size = int(combined_array.shape[0] * sample_frac)
+    sampled_data = combined_array[:sample_size]
+
+    return sampled_data[:, :-1], sampled_data[:, -1]
 
 def sample(X, y, sample = 0.1):
     df = X.copy()
