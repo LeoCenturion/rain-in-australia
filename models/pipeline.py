@@ -5,6 +5,7 @@ from sklearn.metrics import classification_report, accuracy_score
 from pandas.core.series import Series
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_validate
+from sklearn.preprocessing import KBinsDiscretizer
 import pandas as pd
 
 class HierarchicalImputer(BaseEstimator, TransformerMixin):
@@ -227,3 +228,17 @@ def report_results(y, y_pred):
 def cross_eval_pipeline(pipe, X_train, y_train, sample = 0.1):
     scoring = ['precision_macro', 'f1', 'accuracy']
     cross_validate(pipe, X_train, y_train, scoring=scoring)
+
+class BinningTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        self.kb = KBinsDiscretizer(n_bins=10, strategy='uniform', encode='onehot-dense')
+
+    def fit(self, X, y=None):
+        self.kb.fit(X)
+        return self
+
+    def transform(self, X):
+        X_binned = self.kb.transform(X)
+        mult = X_binned * X['Rainfall'].to_frame().values
+        X_combined = np.hstack([X, mult])
+        return X_combined
