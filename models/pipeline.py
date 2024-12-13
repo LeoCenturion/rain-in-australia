@@ -7,6 +7,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_validate
 from sklearn.preprocessing import KBinsDiscretizer
 import pandas as pd
+from sklearn.preprocessing import LabelBinarizer
 
 class HierarchicalImputer(BaseEstimator, TransformerMixin):
     def __init__(self):
@@ -305,3 +306,13 @@ class BinningTransformer(BaseEstimator, TransformerMixin):
         mult = X_binned * X['Rainfall'].to_frame().values
         X_combined = np.hstack([X, mult])
         return X_combined
+
+class LabelBinarizerPipelineFriendly(LabelBinarizer):
+    def fit(self, X):
+        """this would allow us to fit the model based on the X input."""
+        super(LabelBinarizerPipelineFriendly, self).fit(X)
+    def transform(self, X):
+        return super(LabelBinarizerPipelineFriendly, self).transform(X)
+
+    def fit_transform(self, X, y =None):
+        return super(LabelBinarizerPipelineFriendly, self).fit(X).transform(X)
