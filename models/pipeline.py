@@ -112,11 +112,16 @@ class ExpandDateTransformer(BaseEstimator, TransformerMixin):
         return X
 
 class RainTodayTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, NullCount = True):
+        self.NullCount = NullCount
+
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
-        X["RainTodayNull"] = X["RainToday"].isnull().astype(np.int64)
+        if self.NullCount:
+            X["RainTodayNull"] = X["RainToday"].isnull().astype(np.int64)
+            
         X["RainToday"] = X["RainToday"].apply(lambda rain: 1 if rain == "Yes" else 0)
         return X
 
