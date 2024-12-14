@@ -253,12 +253,25 @@ class ColumnDebugger(BaseEstimator, TransformerMixin):
         print(X.columns)
         return X
 
-def sample_array(X, y, sample_frac=0.1):
-    combined_array = np.hstack((X, y))  # Anexar X e y horizontalmente
-
-    np.random.shuffle(combined_array)  # Reordenar al azar
+def sample_array(X, y, sample_frac=0.1, stratify=None):
+    combined_array = np.hstack((X, y.reshape(-1, 1)))
+    y_len = len(y)
     sample_size = int(combined_array.shape[0] * sample_frac)
-    sampled_data = combined_array[:sample_size]
+
+    if stratify is None:
+        sampled_indices = np.random.choice(y_len, sample_size, replace=False)
+    else:
+        unique_classes, class_counts = np.unique(stratify, return_counts=True)
+        stratify_len = len(stratify)
+        sampled_indices = []
+        
+        for cls in unique_classes:
+            cls_indices = np.where(stratify == cls)[0]
+            cls_sample_size = int(sample_size * (class_counts[cls] / stratify_len))
+            cls_sampled_indices = np.random.choice(cls_indices, cls_sample_size, replace=False)
+            sampled_indices.extend(cls_sampled_indices)
+
+    sampled_data = combined_array[sampled_indices]
 
     return sampled_data[:, :-1], sampled_data[:, -1]
 
