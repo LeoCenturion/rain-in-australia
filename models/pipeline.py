@@ -8,6 +8,8 @@ from sklearn.model_selection import cross_validate
 from sklearn.preprocessing import KBinsDiscretizer
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
+from geopy.distance import geodesic
+
 
 class HierarchicalImputer(BaseEstimator, TransformerMixin):
     def __init__(self):
@@ -329,3 +331,20 @@ class LabelBinarizerPipelineFriendly(LabelBinarizer):
 
     def fit_transform(self, X, y =None):
         return super(LabelBinarizerPipelineFriendly, self).fit(X).transform(X)
+
+
+
+class DistanceFromCenterTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, center_coordinates=(-25.0, 133.0)):  # Approximate center of Australia
+        self.center_coordinates = center_coordinates
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        # Calculate the distance from the center for each row
+        X["DistanceFromCenter"] = X.apply(
+            lambda row: geodesic((row["lat"], row["lng"]), self.center_coordinates).kilometers,
+            axis=1
+        )
+        return X
